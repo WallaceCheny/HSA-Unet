@@ -9,7 +9,7 @@ import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
 
-from trainer import trainer_synapse, trainer_stomach, trainer_isic
+from trainer import trainer_synapse, trainer_stomach, trainer_isic, trainer_cvc
 
 warnings.filterwarnings("ignore")
 
@@ -73,7 +73,6 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-
 if __name__ == "__main__":
     # setting device on GPU if available, else CPU
     transformer = locate(args.module)
@@ -116,6 +115,11 @@ if __name__ == "__main__":
             "root_path": args.root_path,
             "list_dir": args.list_dir,
             "num_classes": 2,
+        },
+        "CVC": {
+            "root_path": args.root_path,
+            "list_dir": "CVC",
+            "num_classes": 2,
         }
     }
 
@@ -128,11 +132,12 @@ if __name__ == "__main__":
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
 
-    net = transformer(num_classes=args.num_classes).cuda(0)
+    net = transformer(num_classes=args.num_classes).to(device)
 
     trainer = {
         "Synapse": trainer_synapse,
         "Stomach": trainer_stomach,
         "Isic": trainer_isic,
+        "CVC": trainer_cvc,
     }
     trainer[dataset_name](args, net, args.output_dir)

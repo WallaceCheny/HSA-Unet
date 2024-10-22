@@ -3,9 +3,69 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from networks.Unet import UNet
 from networks.HSAUnet import HSAUnet
+from networks.DAEFormer import DAEFormer
+from networks.vision_transformer import SwinUnet
 import torch
 import cv2
+from config import get_config
+import argparse
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--cfg', type=str, default='./configs/swin_tiny_patch4_window7_224_lite.yaml', metavar="FILE",
+                    help='path to config file', )
+parser.add_argument(
+    "--opts",
+    help="Modify config options by adding 'KEY VALUE' pairs. ",
+    default=None,
+    nargs='+',
+)
+parser.add_argument("--dataset", type=str, default="Synapse", help="experiment_name")
+parser.add_argument("--list_dir", type=str, default="./lists/lists_Synapse", help="list dir")
+parser.add_argument("--num_classes", type=int, default=9, help="output channel of network")
+parser.add_argument("--output_dir", type=str, default="./model_out", help="output dir")
+parser.add_argument("--max_iterations", type=int, default=90000, help="maximum epoch number to train")
+parser.add_argument("--max_epochs", type=int, default=400, help="maximum epoch number to train")
+parser.add_argument("--batch_size", type=int, default=24, help="batch_size per gpu")
+parser.add_argument("--num_workers", type=int, default=4, help="num_workers")
+parser.add_argument("--eval_interval", type=int, default=20, help="eval_interval")
+parser.add_argument("--model_name", type=str, default="synapse", help="model_name")
+parser.add_argument("--n_gpu", type=int, default=1, help="total gpu")
+parser.add_argument("--deterministic", type=int, default=1, help="whether to use deterministic training")
+parser.add_argument("--base_lr", type=float, default=0.05, help="segmentation network base learning rate")
+parser.add_argument("--img_size", type=int, default=224, help="input patch size of network input")
+parser.add_argument("--z_spacing", type=int, default=1, help="z_spacing")
+parser.add_argument("--seed", type=int, default=1234, help="random seed")
+parser.add_argument("--zip", action="store_true", help="use zipped dataset instead of folder dataset")
+parser.add_argument(
+    "--cache-mode",
+    type=str,
+    default="part",
+    choices=["no", "full", "part"],
+    help="no: no cache, "
+    "full: cache all data, "
+    "part: sharding the dataset into nonoverlapping pieces and only cache one piece",
+)
+parser.add_argument("--resume", help="resume from checkpoint")
+parser.add_argument("--accumulation-steps", type=int, help="gradient accumulation steps")
+parser.add_argument(
+    "--use-checkpoint", action="store_true", help="whether to use gradient checkpointing to save memory"
+)
+parser.add_argument(
+    "--amp-opt-level",
+    type=str,
+    default="O1",
+    choices=["O0", "O1", "O2"],
+    help="mixed precision opt level, if O0, no amp is used",
+)
+parser.add_argument("--tag", help="tag of experiment")
+parser.add_argument("--eval", action="store_true", help="Perform evaluation only")
+parser.add_argument("--throughput", action="store_true", help="Test throughput only")
+parser.add_argument(
+    "--module", help="The module that you want to load as the network, e.g. networks.DAEFormer.DAEFormer"
+)
+
+args = parser.parse_args()
+config = get_config(args)
 # Function to load ISIC images and masks
 def load_isic_image(image_path):
     # 加载图像
@@ -33,13 +93,21 @@ def save_segmentation_result(segmentation_result, output_path):
     img = Image.fromarray(segmentation_result.astype(np.uint8)*255)
     img.save(output_path)
 
-def save_segmentation(image_path, out_path):
+def save_segmentation(image_path, out_path, model_name):
     # Load the model
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    # model = UNet(in_ch=3, num_classes=2).to(device)
-    # model.load_state_dict(torch.load('./model_out/Unet_Isic_epoch_29.pth', map_location=device))
-    model = HSAUnet(num_classes=2).to(device)
-    model.load_state_dict(torch.load('./model_out/HSAUnet_Isic_epoch_29.pth', map_location=device))
+    if model_name == 'Unet':
+        model = UNet(in_ch=3, num_classes=2).to(device)
+        model.load_state_dict(torch.load('./model_out/Unet_Isic_epoch_29.pth', map_location=device))
+    elif model_name == 'HSAUnet':
+        model = HSAUnet(num_classes=2).to(device)
+        model.load_state_dict(torch.load('./model_out/HSAUnet_Isic_epoch_29_Boundary_Loss.pth', map_location=device))
+    elif model_name == 'DAEFormer':
+        model = DAEFormer(num_classes=2).to(device)
+        model.load_state_dict(torch.load('./model_out/DAEFormer_Isic_epoch_29.pth', map_location=device))
+    elif model_name == 'SwinUnet':
+        model = SwinUnet(config, num_classes=2).to(device)
+        model.load_state_dict(torch.load('./model_out/SwinUnet_Isic_epoch_29.pth', map_location=device))
 
     model.eval()
 
@@ -114,28 +182,31 @@ def visualize_segmentation(input_images, ground_truth_masks, predicted_masks, mo
         image_with_ground_truth = overlay_boundaries_on_image(image, ground_truth_boundaries, ground_truth_color)
         image_with_predicted = overlay_boundaries_on_image(image_with_ground_truth, predicted_boundaries, predicted_color)
 
-        # Display Input Image
-        axes[0, i].imshow(image)
-        axes[0, i].axis('off')
-        if i == 0:
-            axes[0, i].set_ylabel('Input Image', fontsize=12)
+        predicted_image = Image.fromarray(image_with_predicted)
+        predicted_image.save('./data/Isic/isic2018/demo/' + model_name + '-' + str(i + 1).zfill(2) + '.png')
 
-        # Display Ground Truth Mask
-        axes[1, i].imshow(ground_truth, cmap='gray')
-        axes[1, i].axis('off')
-        if i == 0:
-            axes[1, i].set_ylabel('Ground Truth', fontsize=12)
+        # # Display Input Image
+        # axes[0, i].imshow(image)
+        # axes[0, i].axis('off')
+        # if i == 0:
+        #     axes[0, i].set_ylabel('Input Image', fontsize=12)
+        #
+        # # Display Ground Truth Mask
+        # axes[1, i].imshow(ground_truth, cmap='gray')
+        # axes[1, i].axis('off')
+        # if i == 0:
+        #     axes[1, i].set_ylabel('Ground Truth', fontsize=12)
+        #
+        # # Display Predicted Mask
+        # axes[2, i].imshow(image_with_predicted)
+        # axes[2, i].axis('off')
+        # if i == 0:
+        #     axes[2, i].set_ylabel(model_name, fontsize=12)
 
-        # Display Predicted Mask
-        axes[2, i].imshow(image_with_predicted)
-        axes[2, i].axis('off')
-        if i == 0:
-            axes[2, i].set_ylabel(model_name, fontsize=12)
-
-    fig.suptitle('ISIC-2018 Challenge', fontsize=16)
-    plt.tight_layout()
-    plt.subplots_adjust(top=0.9)
-    plt.show()
+    # fig.suptitle('ISIC-2018 Challenge', fontsize=16)
+    # plt.tight_layout()
+    # plt.subplots_adjust(top=0.9)
+    # plt.show()
 # Function to overlay mask on image
 def overlay_mask_on_image(image, mask, color):
     colored_mask = apply_color_to_mask(mask, color)
@@ -184,15 +255,17 @@ if __name__ == '__main__':
     # visualize_combined(image, ground_truth, unet_result, swin_unet_result)
     # # # Visualize the results
     # # visualize_isic(image, ground_truth, unet_result, swin_unet_result)
-
     # Paths to the images and masks
-    input_images = ['./data/Isic/isic2018/val/images/DAE-03.png', './data/Isic/isic2018/val/images/DAE-02.png']
-    ground_truth_masks = ['./data/Isic/isic2018/val/masks/DAE-01.png', './data/Isic/isic2018/val/masks/DAE-02.png']
-    predicted_masks = ['DAE-01.png', 'DAE-02.png']
-    for i in range(len(input_images)):
-        save_segmentation(input_images[i], predicted_masks[i])
+    # input_images = ['./data/Isic/isic2018/DAE-01.png', './data/Isic/isic2018/DAE-02.png']
+    # ground_truth_masks = ['./data/Isic/isic2018/DAE-Mask-01.png', './data/Isic/isic2018/DAE-Mask-02.png']
+    # predicted_masks = ['./data/Isic/isic2018/DAE-Predicted-01.png', './data/Isic/isic2018/DAE-Predicted-02.png']
+    model_names = ['Unet', 'SwinUnet', 'DAEFormer', 'HSAUnet']
 
-    model_name = 'UNet'
-
-    # Visualize the segmentation results
-    visualize_segmentation(input_images, ground_truth_masks, predicted_masks, model_name)
+    for model_name in model_names:
+        input_images = ['./data/Isic/isic2018/4.png', './data/Isic/isic2018/78.png']
+        ground_truth_masks = ['./data/Isic/isic2018/Mask-4.png', './data/Isic/isic2018/Mask-78.png']
+        predicted_masks = ['./data/Isic/isic2018/' + model_name + '-Predicted-36.png', './data/Isic/isic2018/' + model_name + '-Predicted-78.png']
+        # for i in range(len(input_images)):
+        #     save_segmentation(input_images[i], predicted_masks[i], model_name)
+        # Visualize the segmentation results
+        visualize_segmentation(input_images, ground_truth_masks, predicted_masks, model_name)

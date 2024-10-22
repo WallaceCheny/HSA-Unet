@@ -7,7 +7,7 @@ Transformers have recently gained attention in the computer vision domain due to
 ## Updates
 
 - July 25, 2023, 2022: Accepted in MICCAI 2023 PRIME Workshop! 🥳
-- December 29, 2022: Initial release with arXiv.
+
 
 ## Citation
 ```

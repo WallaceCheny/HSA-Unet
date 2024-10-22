@@ -1,6 +1,5 @@
 import os
 import random
-import h5py
 import numpy as np
 import torch
 from scipy import ndimage
@@ -9,6 +8,7 @@ from torch.utils.data import Dataset
 import imgaug as ia
 import imgaug.augmenters as iaa  # 导入iaa
 from PIL import Image
+import cv2
 
 def mask_to_onehot(mask, ):
     """
@@ -70,7 +70,7 @@ class RandomGenerator(object):
         sample = {'image': image, 'label': label.long()}
         return sample
 
-class Isic_dataset(Dataset):
+class CVC_dataset(Dataset):
     def __init__(self, base_dir, list_dir, split, img_size, norm_x_transform=None, norm_y_transform=None):
         self.norm_x_transform = norm_x_transform
         self.norm_y_transform = norm_y_transform
@@ -103,9 +103,10 @@ class Isic_dataset(Dataset):
     def __getitem__(self, idx):
         img_path = os.path.join(self.img_path, self.sample_list[idx])
         label_path = os.path.join(self.label_path, self.label_list[idx])
-
-        image, label = Image.open(img_path), Image.open(label_path)
+        image = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
+        label = Image.open(label_path)
         image, label = np.array(image, dtype=np.float32) / 255.0, np.array(label, dtype=np.int32) / 255
+        image = np.expand_dims(image, axis=-1)
 
         # if self.split == "train":
         image, label = augment_seg(self.img_aug, image, label)
