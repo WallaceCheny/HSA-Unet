@@ -1,22 +1,10 @@
 # [HSA-Unet: Hybrid Scale Attention Unet for Medical Images Segmentation](https://arxiv.org/abs/2212.13504)
 
-Transformers have recently gained attention in the computer vision domain due to their ability to model long-range dependencies. However, the self-attention mechanism, which is the core part of the Transformer model, usually suffers from quadratic computational complexity with respect to the number of tokens. Many architectures attempt to reduce model complexity by limiting the self-attention mechanism to local regions or by redesigning the tokenization process. In this paper, we propose DAE-Former, a novel method that seeks to provide an alternative perspective by efficiently designing the self-attention mechanism. More specifically, we reformulate the self-attention mechanism to capture both spatial and channel relations across the whole feature dimension while staying computationally efficient. Furthermore, we redesign the skip connection path by including the cross-attention module to ensure the feature reusability and enhance the localization power. Our method outperforms state-of-the-art methods on multi-organ cardiac and skin lesion segmentation datasets, without pre-training weights.
+Transformers have recently gained attention in the computer vision domain due to their ability to model long-range dependencies. However, the self-attention mechanism, which is the core part of the Transformer model, usually suffers from quadratic computational complexity with respect to the number of tokens. Many architectures attempt to reduce model complexity by limiting the self-attention mechanism to local regions or by redesigning the tokenization process. In this paper, we propose HSA-Unet, a novel method that seeks to provide an alternative perspective by efficiently designing the self-attention mechanism. More specifically, we reformulate the self-attention mechanism to capture both spatial and channel relations across the whole feature dimension while staying computationally efficient. Furthermore, we redesign the skip connection path by including the cross-attention module to ensure the feature reusability and enhance the localization power. Our method outperforms state-of-the-art methods on multi-organ cardiac and skin lesion segmentation datasets, without pre-training weights.
 
 ![Proposed Model](./images/proposed_model.png)
 
-## Updates
 
-- July 25, 2023, 2022: Accepted in MICCAI 2023 PRIME Workshop! 🥳
-
-
-## Citation
-```
-@article{azad2022daeformer,
-  title={DAE-Former: Dual Attention-guided Efficient Transformer for Medical Image Segmentation},
-  author={Azad, Reza and Arimond, René and Aghdam, Ehsan Khodapanah and Kazerouni, Amirhosein and Merhof, Dorit},
-  journal={arXiv preprint arXiv:2212.13504},
-  year={2022}
-}
 ```
 
 ## How to use
@@ -30,7 +18,7 @@ You can download the learned weights of the DAEFormer in the following table.
 
 Task | Dataset |Learned weights
 ------------ | -------------|----
-Multi organ segmentation | [Synapse](https://drive.google.com/uc?export=download&id=18I9JHH_i0uuEDg-N6d7bfMdf7Ut6bhBi) | [DAE-Former](https://drive.google.com/u/0/uc?id=1JEnicYtcMbU_PD_ujCPMaOH5_cs56EIO&export=download)
+Multi organ segmentation | [Synapse](https://drive.google.com/uc?export=download&id=18I9JHH_i0uuEDg-N6d7bfMdf7Ut6bhBi) | [HSA-Unet](https://drive.google.com/u/0/uc?id=1JEnicYtcMbU_PD_ujCPMaOH5_cs56EIO&export=download)
 
 
 ### Training and Testing
