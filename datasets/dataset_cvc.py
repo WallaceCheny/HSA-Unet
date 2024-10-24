@@ -1,6 +1,11 @@
 import os
 import random
 import numpy as np
+
+# Monkey-patch: add np.bool back as an alias to Python's bool
+if not hasattr(np, 'bool'):
+    np.bool = bool  # Create the alias so imgaug works
+    
 import torch
 from scipy import ndimage
 from scipy.ndimage.interpolation import zoom
