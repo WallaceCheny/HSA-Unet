@@ -5,8 +5,6 @@ Transformers have recently gained attention in the computer vision domain due to
 ![Proposed Model](./images/proposed_model.png)
 
 
-```
-
 ## How to use
 
 The script train.py contains all the necessary steps for training the network. A list and dataloader for the Synapse dataset are also included.
@@ -14,11 +12,11 @@ To load a network, use the --module argument when running the train script (``--
 
 
 ### Model weights
-You can download the learned weights of the DAEFormer in the following table. 
+You can download the learned weights of the HSA-Unet in the following table. 
 
 Task | Dataset |Learned weights
 ------------ | -------------|----
-Multi organ segmentation | [Synapse](https://drive.google.com/uc?export=download&id=18I9JHH_i0uuEDg-N6d7bfMdf7Ut6bhBi) | [HSA-Unet](https://drive.google.com/u/0/uc?id=1JEnicYtcMbU_PD_ujCPMaOH5_cs56EIO&export=download)
+Multi organ segmentation | [Synapse](https://drive.google.com/file/d/11h84oWyssWqFYm3XwKoWh0ZGZSoXh781/view?usp=sharing) | [HSA-Unet](https://drive.google.com/u/0/uc?id=1JEnicYtcMbU_PD_ujCPMaOH5_cs56EIO&export=download)
 
 
 ### Training and Testing
@@ -55,9 +53,9 @@ Performance comparision on Synapse Multi-Organ Segmentation dataset.
 ![results](https://github.com/mindflow-institue/DAEFormer/assets/61879630/da13cceb-fbef-40a2-9605-be07ca1cac2f)
 
 ### Query
-All implementation done by Rene Arimond. For any query please contact us for more information.
+All implementation done by Wallace. For any query please contact us for more information.
 
 ```python
-rene.arimond@lfb.rwth-aachen.de
+359812680@qq.com
 
 ```
