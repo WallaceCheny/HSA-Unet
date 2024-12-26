@@ -9,7 +9,6 @@ import cv2
 from PIL import Image
 from networks.SGFormer import SGFormer
 from networks.vision_transformer import SwinUnet
-from networks.Unet import UNet
 from scipy.ndimage.interpolation import zoom
 from networks.Unet import UNet
 from config import get_config

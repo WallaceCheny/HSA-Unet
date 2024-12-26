@@ -265,7 +265,7 @@ class DualTransformerBlock(nn.Module):
         #     drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + j], norm_layer=norm_layer,
         #     sr_ratio=sr_ratios[i], linear=linear)
         #     for j in range(depths[i])])
-        self.hybrid_scaled_attention = Attention(dim, False, num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale,
+        self.hybrid_scaled_attention = SelfGuideAttention(dim, False, num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale,
                                                  attn_drop=attn_drop, proj_drop=0,
                                                  sr_ratio=sr_ratio)
         # 转换成通道注意力机制，
@@ -503,7 +503,7 @@ def window_reverse(windows, window_size, H, W, head):
     return x  # (B, H, W, C)
 
 
-class Attention(nn.Module):
+class SelfGuideAttention(nn.Module):
     def __init__(self, dim, mask, num_heads=8, qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0., sr_ratio=1,
                  linear=False):
         super().__init__()

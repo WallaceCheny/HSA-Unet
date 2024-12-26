@@ -1,0 +1,8 @@
+.idea/
+/datasets/__pycache__
+/datasets/CVC-ClinicDB
+/datasets/stomach
+/model_out
+/networks/__pycache__
+__pycache__
+/.ssh

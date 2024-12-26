@@ -240,7 +240,7 @@ def trainer_stomach(args, model, snapshot_path):
                              pin_memory=True,
                              worker_init_fn=worker_init_fn)
 
-    db_test = Stomach_dataset(base_dir=args.test_path, split="test_vol", list_dir=args.list_dir, img_size=args.img_size)
+    db_test = Stomach_dataset(base_dir=args.test_path, split="test", list_dir=args.list_dir, img_size=args.img_size)
     testloader = DataLoader(db_test, batch_size=1, shuffle=False, num_workers=1)
 
     if args.n_gpu > 1:
